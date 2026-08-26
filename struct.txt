@@ -1,0 +1,9 @@
+pentest-tool/
+├── main.sh              # Orchestrateur principal
+├── auto_flow.sh         # Gestion SSH
+├── datas_finder.py      # Scanner Python
+├── config.py            # Configuration
+├── modules/
+│   ├── transfer.sh      # Transfert vers VPS
+│   └── cleanup.sh       # Nettoyage
+└── logs/                # Logs générés

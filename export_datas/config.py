@@ -3,10 +3,10 @@
 import os
 from pathlib import Path
 
-MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB - réduit pour performance
-MAX_TOTAL_SIZE = 500 * 1024 * 1024  # 500MB
-MAX_DEPTH = 10  # Profondeur de scan
-MAX_SCAN_FILES = 10000  # Nombre max de fichiers à scanner
+MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024
+MAX_TOTAL_SIZE = 5 * 1024 * 1024  *1024
+MAX_DEPTH = 10  
+MAX_SCAN_FILES = 10000  
 
 SENSITIVE_PATTERNS = {
     "Credentials": [
