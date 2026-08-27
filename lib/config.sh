@@ -21,18 +21,19 @@ parse_env() {
         line_num=$((line_num + 1))
         
         [[ -z "$line" ]] && continue
-        [[ "$line" =~ ^[[:space:]]*# ]] && continue
         
-        line="${line%%#*}"
+        if [[ "$line" =~ ^[[:space:]]*# ]]; then
+            continue
+        fi
         
-        line="$(echo "$line" | xargs)"
+        line="$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
         [[ -z "$line" ]] && continue
         
         if [[ "$line" =~ ^([^=]+)=(.*)$ ]]; then
             local key="${BASH_REMATCH[1]}"
             local value="${BASH_REMATCH[2]}"
             
-            key="$(echo "$key" | xargs)"
+            key="$(echo "$key" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
             
             if ! validate_key "$key"; then
                 echo "WARNING: Invalid key name at line $line_num: '$key'" >&2
@@ -44,6 +45,7 @@ parse_env() {
             value="${value#\'}"
             value="${value%\'}"
             
+
             declare -gx "$key=$value"
         fi
     done < "$env_file"
@@ -72,7 +74,6 @@ load_config() {
     SSH_TIMEOUT="${SSH_TIMEOUT:-10}"
     SSH_MAX_RETRIES="${SSH_MAX_RETRIES:-5}"
     REAL_DELETE="${REAL_DELETE:-0}"
-    PENTEST_VM="${PENTEST_VM:-0}"
     
     return 0
 }

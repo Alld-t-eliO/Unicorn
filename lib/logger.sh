@@ -3,6 +3,7 @@
 LOG_DIR="${LOG_DIR:-/tmp/datas_finder}"
 LOG_FILE=""
 REMOTE_LOG_PATH=""
+DEBUG_MODE="${DEBUG_MODE:-0}"  
 
 
 init_logger() {
@@ -39,7 +40,6 @@ log_local() {
     local message="$2"
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     
-    # Validate log level
     local valid=0
     for l in "${LOG_LEVELS[@]}"; do
         [[ "$l" == "$level" ]] && valid=1 && break
@@ -47,6 +47,10 @@ log_local() {
     [[ $valid -eq 0 ]] && level="INFO"
     
     echo "[$timestamp] [$level] $message" >> "$LOG_FILE" 2>/dev/null || true
+    
+    if [[ "${DEBUG_MODE:-0}" == "1" ]]; then
+        echo "[$timestamp] [$level] $message" >&2
+    fi
 }
 
 
@@ -57,14 +61,18 @@ log_remote() {
     log_local "$level" "$message"
     
     if [[ -n "${VPS_IP:-}" ]] && [[ -n "${VPS_USER:-}" ]] && [[ -n "${VPS_PORT:-}" ]] && [[ -n "${VPS_PATH:-}" ]]; then
-        local escaped_message=$(printf '%s' "$message" | sed "s/'/'\\\\''/g")
+        local temp_file="/tmp/log_$$_$(date +%s%N).tmp"
         
-        ssh -o ConnectTimeout=2 \
+        echo "$(date '+%Y-%m-%d %H:%M:%S') [$level] $message" > "$temp_file"
+        
+        scp -o ConnectTimeout=2 \
             -o BatchMode=yes \
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
-            -p "$VPS_PORT" "$VPS_USER@$VPS_IP" \
-            "echo '$(date '+%Y-%m-%d %H:%M:%S') [$level] $escaped_message' >> '$REMOTE_LOG_PATH'" 2>/dev/null || true
+            -P "$VPS_PORT" \
+            "$temp_file" "$VPS_USER@$VPS_IP:$REMOTE_LOG_PATH" 2>/dev/null || true
+        
+        rm -f "$temp_file"
     fi
 }
 
